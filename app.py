@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///blog.db"
 app.config["JWT_SECRET_KEY"] = "super-secret-key"
-jwt = JWTMANGER(app)
+jwt = JWTManager(app)
 db.init_app(app)
 
 from models import User, Post
