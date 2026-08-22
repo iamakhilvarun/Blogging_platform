@@ -1,7 +1,12 @@
 from flask import Flask, request
 from extensions import db
-from flask_jwt_extended import JWTManager, check_password_hash
-from werkzeug.security import check_password_hash
+from flask_jwt_extended import (
+    JWTManager,
+    create_access_token,
+    jwt_required,
+    get_jwt_identity,
+)
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 
@@ -19,13 +24,16 @@ def home():
 
 
 @app.route("/posts", methods=["POST"])
+@jwt_required()
 def create_post():
     data = request.get_json()
+
+    user_id = get_jwt_identity()
 
     title = data["title"]
     content = data["content"]
 
-    post = Post(title=title, content=content, user_id=1)
+    post = Post(title=title, content=content, user_id=user_id)
 
     db.session.add(post)
     db.session.commit()
@@ -125,13 +133,11 @@ def login():
         return {"message": "User not found"}, 404
 
     if not check_password_hash(user.password, password):
-        return {"message": "Invalid password"},401
+        return {"message": "Invalid password"}, 401
 
-    token= create_access_token(identity=user.id)
+    token = create_access_token(identity=str(user.id))
 
-    return{
-        "access token": token
-    },200
+    return {"access_token": token}, 200
 
 
 with app.app_context():
