@@ -1,8 +1,7 @@
 from flask import Flask, request
 from extensions import db
-from flask_jwt_extended import JWTManager
-from werkzeug.security import generate_password_hash
-
+from flask_jwt_extended import JWTManager, check_password_hash
+from werkzeug.security import check_password_hash
 
 app = Flask(__name__)
 
@@ -94,9 +93,46 @@ def delete_post(id):
     db.session.commit()
 
     return {"message": "Post deleted sucessfully"}
-@app.route("/register",methods=["POST"])
+
+
+@app.route("/register", methods=["POST"])
 def register():
-    pass
+    data = request.get_json()
+
+    username = data["username"]
+    email = data["email"]
+    password = data["password"]
+
+    hashed_password = generate_password_hash(password)
+
+    user = User(username=username, email=email, password=hashed_password)
+    db.session.add(user)
+    db.session.commit()
+
+    return {"message": "User registered successfully"}, 201
+
+
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+
+    email = data["email"]
+    password = data["password"]
+
+    user = User.query.filter_by(email=email).first()
+
+    if user is None:
+        return {"message": "User not found"}, 404
+
+    if not check_password_hash(user.password, password):
+        return {"message": "Invalid password"},401
+
+    token= create_access_token(identity=user.id)
+
+    return{
+        "access token": token
+    },200
+
 
 with app.app_context():
     db.create_all()

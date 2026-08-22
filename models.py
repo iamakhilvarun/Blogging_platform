@@ -2,6 +2,7 @@ from extensions import db
 
 
 class User(db.Model):
+    # we using unique as for the everything should be unique for its respective id so we dont clash with same username,email
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
