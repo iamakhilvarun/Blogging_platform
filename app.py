@@ -140,6 +140,12 @@ def login():
     return {"access_token": token}, 200
 
 
+@app.route("/logout", methods=[""])
+@jwt_required
+def logout():
+    return {"message": "You have logged out"}
+
+
 with app.app_context():
     db.create_all()
 
