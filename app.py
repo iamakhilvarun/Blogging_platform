@@ -74,7 +74,9 @@ def get_post(id):
 
 # update
 @app.route("/posts/<int:id>", methods=["PUT"])
+@jwt_required()
 def update_post(id):
+    current_user=int(get_jwt_identity())
     post = Post.query.get(id)
     if post is None:
         return {"message": "Post not found"}, 404
