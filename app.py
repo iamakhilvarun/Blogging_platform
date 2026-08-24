@@ -76,10 +76,13 @@ def get_post(id):
 @app.route("/posts/<int:id>", methods=["PUT"])
 @jwt_required()
 def update_post(id):
-    current_user=int(get_jwt_identity())
+    current_user = int(get_jwt_identity())
     post = Post.query.get(id)
     if post is None:
         return {"message": "Post not found"}, 404
+
+    if post.user_id != current_user:
+        return {"message": "You cannot edit this post"}, 403
 
     data = request.get_json()
 
@@ -93,12 +96,19 @@ def update_post(id):
 
 # Delete
 @app.route("/posts/<int:id>", methods=["DELETE"])
+@jwt_required()
 def delete_post(id):
+    current_user= int(get_jwt_identity())
+
     post = Post.query.get(id)
 
     if post is None:
         return {"message": "Post not found"}, 404
 
+    if current_user!=post.user_id:
+        return{
+            "message":"You cannot delete the post"
+        }
     db.session.delete(post)
     db.session.commit()
 
